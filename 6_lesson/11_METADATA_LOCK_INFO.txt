@@ -1,0 +1,29 @@
+# REVIEW:
+# https://mariadb.com/kb/en/metadata-lock-info-plugin/
+
+INSTALL SONAME 'metadata_lock_info';
+SELECT * FROM information_schema.metadata_lock_info; 
+
+
+FROM SESSION #1:
+START TRANSACTION;
+UPDATE my_big_table1 set
+user_city='NEW YORK', user_country='USA'
+where user_name='c4s31virgiplastic1blankhepta';
+
+
+FROM SESSION #2
+UPDATE my_big_table1 set
+user_comment='no comment'
+where user_name='c4s31virgiplastic1blankhepta';
+
+
+# FROM SESSION #1
+SELECT * FROM information_schema.metadata_lock_info; 
+
+# COMMIT!
+rollback;
+select * from my_big_table1 where user_name='c4s31virgiplastic1blankhepta';
+
+
+

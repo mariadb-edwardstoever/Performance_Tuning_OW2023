@@ -1,0 +1,43 @@
+# SHOW STATEMENTS
+
+# Login to mariadb
+show processlist;
+show full processlist;
+select * from information_schema.processlist;
+
+
+SHOW GLOBAL STATUS LIKE 'connections';
+
+SHOW GLOBAL STATUS LIKE 'Com_select';
+SHOW GLOBAL STATUS LIKE 'Com_insert';
+SHOW GLOBAL STATUS LIKE 'Com_update';
+SHOW GLOBAL STATUS LIKE 'Com_delete';
+
+SHOW GLOBAL STATUS LIKE 'Handler_read_rnd_next';
+select * from information_schema.global_status where VARIABLE_NAME = 'Handler_read_rnd_next';
+
+# CREATE A TABLE WITH NO INDEXES:
+create table sold_tickets_no_keys as select * from tt_sold_tickets;
+# How many rows?
+select count(*) from sold_tickets_no_keys;
+
+# USING SESSION LEVEL STATUS TO ENSURE OTHER SESSIONS DO NOT EFFECT OUTCOME:
+show session status like 'Handler_read_rnd_next';
+update sold_tickets_no_keys set ticket_price=0 where ticket_id between 1500 and 8000;
+show session status like 'Handler_read_rnd_next';
+
+# What is is the difference between 1st reading of Handler_read_rnd_next and 2nd Handler_read_rnd_next?
+
+#### SHOW USERSTATISTICS TABLES:
+show client_statistics\G
+show table_statistics;
+show index_statistics;
+
+
+update sold_tickets_no_keys set purchase_id=0 where ticket_id =99999;
+show table_statistics;
+
+show index_statistics;
+create index ind_ticket_id on sold_tickets_no_keys(ticket_id);
+update sold_tickets_no_keys set purchase_id=0 where ticket_id =99991;
+show index_statistics;

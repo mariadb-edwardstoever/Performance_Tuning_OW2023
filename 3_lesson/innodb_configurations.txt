@@ -1,0 +1,52 @@
+-- CALCULATE THE CACHE READS RATIO, SHOULD BE 99% OR MORE:
+SELECT VARIABLE_VALUE into @READ_REQUESTS 
+from information_schema.GLOBAL_STATUS 
+where VARIABLE_NAME='INNODB_BUFFER_POOL_READ_REQUESTS';
+
+SELECT VARIABLE_VALUE into @READS 
+from information_schema.GLOBAL_STATUS 
+where VARIABLE_NAME='INNODB_BUFFER_POOL_READS';
+
+SELECT (1 - (@READS / @READ_REQUESTS)) * 100 AS CACHE_RATIO;
+# WHAT WOULD MAKE IT BETTER OR WORSE?
+
+# RESTART MARIABD
+select * from openworks.my_big_table limit 10000;
+# CALCULATE THE CACHE RATIO AGAIN!
+# WHAT WILL MAKE IT IMPROVE?
+
+
+
+# INNODB ROW FORMATS
+Row formats determine how MariaDB will store row data. The most common ones used are:
+DYNAMIC (default) -- the most modern format available. Excellent for most scenarios.
+COMPRESSED -  1M of compressed table data will take 3M of memory to access. Good for table that are seldom accessed for read/writes especially when available disk space is a problem. What you save on disk, you lose in required memory when table is accessed. Considering the extra effort the CPU makes to compress and decompress, it is still fast and accessible. That is because when the table is accessed, it is stored in memory in both compressed and decompressed formats.
+
+Look for a table in the openworks schema called my_big_table. 
+Select count(*) from my_big_table;
+select * from my_big_table limit 1000;
+Review my_big_table size on disk. 
+Alter my_big_table to ROW_FORMAT=DYNAMIC.
+
+
+
+# CONFIGURING REDO WRITING AND FLUSHING
+EDIT CUSTOM OPTIONS FILE /etc/mysql/mariadb.conf.d/zzz_new.cnf
+
+# innodb_flush_log_at_trx_commit 
+Set the value for innodb_flush_log_at_trx_commit=2
+
+    1 The default, the log buffer is written to the InnoDB redo log file 
+      and a flush to disk performed after each transaction. 
+      This is required for full ACID compliance.  
+    0 Nothing is done on commit; rather the log buffer is written and flushed 
+      to the InnoDB redo log once a second. This gives better performance, 
+      but a server crash can erase the last second of transactions.
+    2 The log buffer is written to the InnoDB redo log after each commit, but 
+      flushing takes place every innodb_flush_log_at_timeout seconds 
+      (by default once a second). Performance is slightly better, but a OS or 
+      power outage can cause the last second's transactions to be lost.
+
+Set the value for innodb_flush_log_at_timeout=3
+
+Interval in seconds to write and flush the InnoDB redo log. Before MariaDB 10, this was fixed at one second, which is still the default, but this can now be changed. It's usually increased to reduce flushing and avoid impacting performance of binary log group commit.

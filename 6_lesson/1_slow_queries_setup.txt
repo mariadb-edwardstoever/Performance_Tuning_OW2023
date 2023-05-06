@@ -1,0 +1,31 @@
+# STEP 1, enable the slow query log and performance schema
+hostname
+find /etc/ -name "zz*cnf"
+vi /etc/mysql/mariadb.conf.d/zzz_new.cnf
+
+########## ADD THE FOLLOWING VALUES TO OPTIONS FILE:
+slow_query_log = 1
+slow_query_log_file = /var/log/mysql/host.slow_query.log
+long_query_time = 0.4
+log_queries_not_using_indexes = OFF
+performance_schema=ON
+performance-schema-instrument='stage/%=ON'
+performance-schema-consumer-events-stages-current=ON
+performance-schema-consumer-events-stages-history=ON
+performance-schema-consumer-events-stages-history-long=ON
+performance-schema-consumer-events-statements-current=ON
+performance-schema-consumer-events-statements-history=ON
+performance-schema-consumer-events-statements-history-long=ON
+performance-schema-consumer-events-transactions-current=ON
+performance-schema-consumer-events-transactions-history=ON
+performance-schema-consumer-events-transactions-history-long=ON
+performance-schema-consumer-events-waits-current=ON
+performance-schema-consumer-events-waits-history=ON
+performance-schema-consumer-events-waits-history-long=ON
+
+
+# RESTART MARIADB
+systemctl restart mariadb;
+
+# EDWARD - PUT SLOW QUERIES INTO PLAY! # cp ~/app/REALLY_SLOW_QUERIES/*.sql ~/app/USERSQL/
+

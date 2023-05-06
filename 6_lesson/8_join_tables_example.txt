@@ -1,0 +1,7 @@
+use openworks;
+
+SELECT A.first_name, A.last_name, A.country_of_birth, B.post_id, B.comment_id, substr(B.comment_text,1,40)
+FROM site_users A inner join site_user_comments B
+ON A.site_user_id=B.site_user_id
+where A.site_user_id=100913;
+

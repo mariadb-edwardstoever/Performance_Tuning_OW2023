@@ -1,0 +1,28 @@
+# WHAT IS A COMPOSITE INDEX?
+
+use openworks;
+
+create index i_city_country on my_big_table(user_city, user_country);
+
+explain SELECT user_id, user_name, user_birthdate, user_city  
+FROM my_big_table  
+USE INDEX(i_city_country) 
+WHERE user_country='Slovetzia';
+
+explain SELECT user_id, user_name, user_birthdate, user_city  
+FROM my_big_table  
+USE INDEX(i_user_country) 
+WHERE user_country='Slovetzia';
+
+explain
+SELECT user_id, user_name, user_birthdate, user_city  
+FROM my_big_table 
+USE INDEX(i_user_country) 
+WHERE user_city='Biltorsing' and user_country='Konohagakure';
+
+explain
+SELECT user_id, user_name, user_birthdate, user_city  
+FROM my_big_table 
+USE INDEX(i_city_country) 
+WHERE user_city='Biltorsing' and user_country='Konohagakure';
+

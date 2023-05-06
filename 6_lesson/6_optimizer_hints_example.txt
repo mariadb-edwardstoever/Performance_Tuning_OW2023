@@ -1,0 +1,29 @@
+# OPTIMIZER HINTS EXAMPLE
+use openworks;
+
+explain
+SELECT user_id, user_name, user_birthdate, user_city 
+FROM my_big_table1 
+IGNORE INDEX(i_user_country)
+WHERE user_country='Slovetzia';
+
+explain
+SELECT user_id, user_name, user_birthdate, user_city 
+FROM my_big_table1 
+WHERE user_country='Slovetzia';
+
+
+# WHAT IS THE TIME DIFFERENCE BETWEEN THESE TWO QUERIES?
+
+SELECT user_id, user_name, user_birthdate, user_city 
+FROM my_big_table1 
+IGNORE INDEX(i_user_country)
+WHERE user_country='Slovetzia';
+
+SELECT user_id, user_name, user_birthdate, user_city 
+FROM my_big_table1 
+WHERE user_country='Slovetzia';
+
+
+#### WHEN A QUERY STOPS USING AN INDEX, TRY THE OPTIMIZE COMMAND:
+optimize table my_big_table;

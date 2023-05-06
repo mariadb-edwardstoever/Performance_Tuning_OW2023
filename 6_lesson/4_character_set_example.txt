@@ -1,0 +1,20 @@
+use openworks;
+
+/* Character sets */
+SHOW CHARACTER SET;
+SHOW CHARACTER SET LIKE '%utf%';
+SHOW CHARACTER SET LIKE '%latin%';
+
+show create table charset_test;
+select col1, length(col1), char_length(col1) from  charset_test;
+
+
+CREATE TABLE `charset_test_latin1` (
+  `col1` varchar(10) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+
+insert into charset_test_latin1 select * from charset_test;
+
+select col1, length(col1), char_length(col1) from  charset_test_latin1;
+select col1, length(col1), char_length(col1) from  charset_test;
+

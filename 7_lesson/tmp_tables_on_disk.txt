@@ -1,0 +1,23 @@
+#STEP 1 FIND USERS THAT CREATE TMP TABLES ON DISK
+
+# VERIFY THAT status_by_user IS NOT FOR CURRENT SESSIONS ONLY. 
+# RUN THIS QUERY AS ROOT, LOGOUT, LOGIN, RUN IT AGAIN
+select * from performance_schema.status_by_user
+where variable_name in 
+('created_tmp_disk_tables','Created_tmp_files','Created_tmp_tables')
+and `USER`='root';
+# WE CAN SEE THAT THE STATS PERSIST BEYOND A GIVEN SESSION! GREAT!
+
+
+# LOOK FOR ACCOUNTS THAT CREATE LOTS OF TEMP TABLES ON DISK
+select * from performance_schema.status_by_user
+where variable_name in 
+('created_tmp_disk_tables','Created_tmp_files','Created_tmp_tables')
+and `USER` is not null;
+
+# WHAT ARE THESE ACCOUNTS DOING?
+select sql_text from perf_schema.statements_history_long where user='maxscale' and sql_text is not null;
+select sql_text from perf_schema.statements_history_long where user='app' and sql_text is not null;
+
+# CAN YOU REPEAT WHAT THOSE ACCOUNTS WERE DOING TO SEE WHAT STATMENTS INCREASE YOUR OWN STATISTICS?
+

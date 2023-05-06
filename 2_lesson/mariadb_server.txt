@@ -1,0 +1,53 @@
+# LESSON 2 DATABASE GENERAL CONFIGURATION
+
+# STEP 1 
+# list all the processes/threads
+mariadb openworks -uowuser -ppassword
+show processlist;
+
+mariadb # as root
+show processlist;
+
+# STEP 2
+# WHAT IS THE DIFFERENCE BETWEEN GLOBAL VARIABLES AND GLOBAL STATUS?
+# THESE LOOK SIMILAR, ARE THEY?
+SHOW GLOBAL VARIABLES\G 
+SHOW GLOBAL STATUS\G
+
+# SOME GLOBAL VARIABLES ARE SIMILAR TO STATUS BECAUSE THE VALUE
+# COMES FROM THE PROCESS AND CANNOT BE CHANGED
+show global variables like '%version%';
+
+# STEP 3
+# WHAT IS A SESSION VARIABLE? THERE ARE CUSTOM SESSION VARIABLES and SYSTEM SESSION VARIABLES.
+# ONE @ is SESSION:
+set @MYVAR=1;
+# TWO @ IS GLOBAL, CAN YOU DO THIS?
+set @@MYVAR=1;
+
+# NOT CUSTOM:
+set @@sort_buffer_size=10*1024*1024;
+set session sort_buffer_size=10*1024*1024;
+
+# STEP 4
+# edit a new file: /etc/mysql/mariadb.conf.d/zzz_new.cnf
+[server]
+sync_binlog = 1
+
+# restart mariadb
+systemctl restart mariadb
+
+# what is the value for sync_binlog?
+show global variables like 'sync_binlog';
+
+# edit the file /etc/mysql/mariadb.conf.d/zzz_new.cnf 
+sync_binlog = 0
+
+# restart the database and check the global variable again.
+
+# STEP 5 Review all global variables in cnf files with my_print_defaults command:
+my_print_defaults --mysqld
+my_print_defaults --mysqld | grep simple
+my_print_defaults --mysqld | grep sync_binlog
+
+

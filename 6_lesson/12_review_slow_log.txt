@@ -1,0 +1,10 @@
+# LOOK AT THIS QUERY:
+cat bad_query_1.sql
+
+# NOW RUN THE QUERY:
+mariadb pandrea < bad_query_1.sql
+
+# review the slow query log
+cp /var/log/mysql/$(hostname).slow_query.log /tmp/
+cat /tmp/$(hostname).slow_query.log
+mariadb-dumpslow /tmp/$(hostname).slow_query.log -t 6

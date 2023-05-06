@@ -1,0 +1,68 @@
+THE BELOW QUERIES HAVE BEEN MODIFIED AND IMPROVED. 
+REVIEW THE perf_schema
+
+AVAILABLE ON GITHUB:
+https://github.com/mariadb-edwardstoever/perf_schema
+
+
+
+
+
+
+/* WAITS BY LATENCY */
+SELECT event_name, count_star, sum_timer_wait, avg_timer_wait, max_timer_wait 
+FROM performance_schema.events_waits_summary_global_by_event_name 
+WHERE event_name != 'idle'
+ORDER BY sum_timer_wait DESC LIMIT 5;
+
+/* USERS BY I/O LATENCY */
+SELECT user, SUM(count_star) AS count,
+SUM(sum_timer_wait) AS total_latency
+FROM performance_schema.events_waits_summary_by_user_by_event_name
+WHERE event_name LIKE 'wait/io/file/%' AND user IS NOT NULL
+GROUP BY user ORDER BY SUM(sum_timer_wait) DESC;
+
+/* USERS BY STATEMENT LATENCY */
+SELECT user, SUM(count_star) AS total_statements,
+format(SUM(sum_timer_wait),0) AS total_latency, 
+format(SUM(sum_timer_wait) / SUM(count_star),0) AS avg_latency
+FROM performance_schema.events_statements_summary_by_user_by_event_name
+WHERE user IS NOT NULL
+GROUP BY user ORDER BY SUM(sum_timer_wait) DESC LIMIT 5;
+
+/* FILES BY TOTAL I/O */
+SELECT file_name, count_read,
+FORMAT(sum_number_of_bytes_read,0) AS total_read,
+IFNULL(sum_number_of_bytes_read / count_read, 0.00) AS avg_read, count_write,
+FORMAT(sum_number_of_bytes_write,0) AS total_write,
+IFNULL(sum_number_of_bytes_write / count_write, 0.00) AS avg_write,
+FORMAT(sum_number_of_bytes_read+sum_number_of_bytes_write,0) AS total, IFNULL(ROUND(100-((sum_number_of_bytes_read/(sum_number_of_bytes_read+sum_number_of_bytes_write))*100), 2), 0.00) AS write_pct
+FROM performance_schema.file_summary_by_instance
+ORDER BY sum_number_of_bytes_read+sum_number_of_bytes_write DESC LIMIT 5;
+
+/* USERS BY CONNECTION */
+SELECT * FROM performance_schema.accounts 
+WHERE user IS NOT NULL ORDER BY current_connections DESC;
+
+/* TABLES BY STATEMENT TYPE */
+SELECT object_schema AS db, object_name AS tbl, count_fetch AS selects,
+FORMAT(sum_timer_fetch,0) AS select_latency, count_insert AS inserts,
+FORMAT(sum_timer_insert,0) AS insert_latency, count_update AS updates,
+FORMAT(sum_timer_update,0) AS update_latency, count_delete AS deletes,
+FORMAT(sum_timer_delete,0) AS delete_latency
+FROM performance_schema.table_io_waits_summary_by_table
+ORDER BY sum_timer_wait DESC LIMIT 5;
+
+/* TABLES WITH FULL TABLE SCANS */
+SELECT object_schema, object_name, 
+format(count_read,0) AS rows_full_scanned 
+FROM performance_schema.table_io_waits_summary_by_index_usage 
+WHERE index_name IS NULL AND count_read > 0 
+ORDER BY count_read DESC LIMIT 5;
+
+/* TABLES WITH UNUSED INDEXES */
+SELECT object_schema, object_name, index_name
+FROM performance_schema.table_io_waits_summary_by_index_usage
+WHERE index_name IS NOT NULL AND count_star=0
+ORDER BY object_schema, object_name limit 5;
+

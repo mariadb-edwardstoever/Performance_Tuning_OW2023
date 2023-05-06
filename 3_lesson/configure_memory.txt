@@ -1,0 +1,80 @@
+### CONFIGURE MEMORY FOR INNODB ENGINE
+
+SELECT ( @@key_buffer_size
++ @@query_cache_size
++ @@innodb_buffer_pool_size
++ @@innodb_log_buffer_size
++ @@max_connections * ( 
+    @@read_buffer_size
+    + @@read_rnd_buffer_size
+    + @@sort_buffer_size
+    + @@join_buffer_size
+    + @@binlog_cache_size
+    + @@thread_stack
+    + @@tmp_table_size )
+) / (1024 * 1024) AS MAX_MEMORY_MB;
+
+# DO WE HAVE A QUERY CACHE ENABLED?
+show global variables where Variable_name in ('have_query_cache','query_cache_type');
+
+query_cache_size
+-- we don't want this
+
+innodb_buffer_pool_size
+-- The primary value to adjust on a database server with entirely/primarily InnoDB tables, can be set up to 80% of the total memory in these environments.
+-- let's use approx 66% of available RAM
+
+innodb_log_buffer_size 
+-- Size in bytes of the buffer for writing InnoDB redo log files to disk. Increasing this means larger transactions can run without needing to perform disk I/O before committing.
+-- DEFAULT IS 16777216 (16mb)
+
+max_connections
+-- we expect a maximum of 30 connection, but we will allow 50
+
+read_buffer_size
+-- Each thread performing a sequential scan (for MyISAM, Aria and MERGE tables) allocates a buffer of this size in bytes for each table scanned. Increase if you perform many sequential scans. If not in a multiple of 4KB, will be rounded down to the nearest multiple. Also used in ORDER BY's for caching indexes in a temporary file, for caching results of nested queries, for bulk inserts into partitions, and to determine the memory block size of MEMORY tables. 
+-- DEFAULT IS 131072 (128kb). 
+
+join_buffer_size
+-- Minimum size in bytes of the buffer used for queries that cannot use an index, and instead perform a full table scan. Increase to get faster full joins when adding indexes is not possible, although be aware of memory issues, since joins will always allocate the minimum size. Best left low globally and set high in sessions that require large full joins. 
+-- DEFAULT IS 262144 (256kb)
+
+binlog_cache_size
+-- If the binary log is active, this variable determines the size in bytes, per-connection, of the cache holding a record of binary log changes during a transaction. A separate variable, binlog_stmt_cache_size, sets the upper limit for the statement cache. The binlog_cache_disk_use and binlog_cache_use server status variables will indicate whether this variable needs to be increased (you want a low ratio of binlog_cache_disk_use to binlog_cache_use). 
+-- DEFAULT IS 32768 (32kb)
+
+thread_stack
+-- Stack size for each thread. If set too small, limits recursion depth of stored procedures and complexity of SQL statements the server can handle in memory. 
+-- DEFAULT is 299008 (292kb);
+
+tmp_table_size
+-- The largest size for temporary tables in memory (not MEMORY tables) although if max_heap_table_size is smaller the lower limit will apply. You can see if it's necessary to increase by comparing the status variables Created_tmp_disk_tables and Created_tmp_tables to see how many temporary tables out of the total created needed to be converted to disk. Often complex GROUP BY queries are responsible for exceeding the limit.
+-- DEFAULT is 16777216 (16 MB)
+
+query_cache_size = 0
+innodb_buffer_pool_size = 1073741824
+innodb_log_buffer_size = 33554432
+max_connections = 50
+read_buffer_size = 262144
+join_buffer_size = 196608
+binlog_cache_size = 49152
+thread_stack = 299008
+tmp_table_size = 25165824
+
+# OUR TARGET IS 2G total RAM FOR EVERYTHING!
+
+SELECT ( @@key_buffer_size
++ @@query_cache_size
++ @@innodb_buffer_pool_size
++ @@innodb_log_buffer_size
++ @@max_connections * ( 
+    @@read_buffer_size
+    + @@read_rnd_buffer_size
+    + @@sort_buffer_size
+    + @@join_buffer_size
+    + @@binlog_cache_size
+    + @@thread_stack
+    + @@tmp_table_size )
+) / (1024 * 1024) AS MAX_MEMORY_MB;
+
+# REDUCE max_connections and innodb_buffer_pool_size TO GET DOWN TO 2G

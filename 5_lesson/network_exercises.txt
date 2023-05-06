@@ -1,0 +1,36 @@
+# Step 1, create a large table with mariadb-slap
+
+mariadb-slap --auto-generate-sql --no-drop \
+--create-schema=networktest \
+--auto-generate-sql-execute-number=25000 \
+--auto-generate-sql-load-type=write 
+
+# Step 2, dump the schema and table to a text file, using widest possible syntax.
+mariadb-dump --add-drop-database --databases networktest --skip-extended-insert --complete-insert > $(hostname)_networktest_schema.sql
+
+# how large is the file?
+
+# Step 3, time the script from localhost socket connection
+time mariadb < $(hostname)_networktest_schema.sql
+# Note how long it takes to complete.
+
+# Step 4, transfer the dump file and ssh to remote machine:
+# root password on apli.edw.ee is mariadb
+scp $(hostname)_networktest_schema.sql root@apli.edw.ee:/tmp
+ssh root@apli.edw.ee
+
+# Step 5 - compare the script over the network
+OLD_HN=yourhostname
+time mariadb -u admin -ppassword -hdb1.edw.ee < /tmp/${OLD_HN}_networktest_schema.sql
+
+# How long did it take over the network?
+
+##### Another way to measure network delay based on precise file size
+# return to your machine
+# create a blob file, 100Mb in size
+dd if=/dev/zero of=/tmp/$(hostname).blob bs=1M count=100
+ls -lh /tmp/
+
+# Use the blob file to precisely measure time to scp to remote mariadb
+time scp /tmp/$(hostname).blob root@apli.edw.ee:/tmp
+

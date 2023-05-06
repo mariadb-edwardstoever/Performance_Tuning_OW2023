@@ -1,0 +1,41 @@
+# STEP 1 mariadb-slap, generate the HELP menu
+# Run the command 
+
+mariadb-slap --help
+
+# REVIEW THE OUTPUT
+
+# STEP 2
+# RUN A MINIMUM mariadb-slap command:
+
+mariadb-slap --auto-generate-sql --no-drop --create-schema=slaptest --auto-generate-sql-execute-number=500
+
+# Login to mariadb and review the schema slaptest
+# Optional: drop the schema slaptest  
+
+# STEP 3
+# Review the SQL script q_example_counts.sql
+# Reveiw the shell script example_counts_slap.sh
+
+./example_counts_slap.sh
+
+# STEP 4
+# Mariadb-slap can be used for more complex activities such as temporary tables.
+
+# Review q_example_customer_activity.sql
+# review the shell script example_customer_slap.sh
+
+./example_customer_slap.sh
+
+# STEP 5
+# Mariadb-slap can output to CSV, and that output can be saved as table data.
+
+# Reveiw q_example_report.sql
+# review example_report_slap.sh
+# review slap_schema.sql
+mariadb < slap_schema.sql
+./example_report_slap.sh
+
+# Login and review the table slap.slap_results
+
+

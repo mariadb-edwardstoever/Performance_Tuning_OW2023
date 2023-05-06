@@ -1,0 +1,12 @@
+# HOW DOES A LIMIT CLAUSE REALLY EFFECT A QUERY?
+
+use pandrea;
+select a.customer_name, a.customer_city 
+from tt_customers a 
+order by a.customer_city, a.customer_name
+limit 10000;
+
+with aq as (select a.customer_name, a.customer_city 
+from tt_customers a 
+limit 10000)
+select * from aq order by customer_city, customer_name;

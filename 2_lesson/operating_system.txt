@@ -1,0 +1,40 @@
+# LESSON 2 
+# CONFIGURE OPERATING SYSTEM FOR MARIABD SERVER
+
+###################################
+# STEP 1 - SWAPPINESS
+
+# How much swap does the OS have available?
+
+# How much swappiness is currently configured?
+sysctl vm.swappiness
+# too much! -- fix it:
+echo "vm.swappiness=1" >> /etc/sysctl.conf
+sysctl --system
+
+# Check it again:
+sysctl vm.swappiness
+
+###################################
+STEP 2 - I/O SCHEDULER
+# For optimal IO performance running a database we are using the "none" (previously called noop) scheduler.
+cat /sys/block/sda/queue/scheduler
+
+###################################
+STEP 3 - noatime,nodiratime
+shutdown the database
+
+# edit /etc/fstab with vi
+for /data mountpoint, change "rw" to "rw,noatime,nodiratime"
+umount /data
+mount /data
+
+###################################
+STEP 4 - limits.conf
+
+# edit /etc/security/limits.conf
+# Add these lines
+mysql            soft    nofile          65535
+mysql            hard    nofile          65535
+
+restart the database

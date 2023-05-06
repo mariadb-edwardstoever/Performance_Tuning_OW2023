@@ -1,0 +1,29 @@
+# STEP 1 # WHAT VALUES ARE CONTROLLING QUERY PROFILING?
+
+show session variables like '%profiling%';
+
+SET profiling = 1;
+
+# STEP 2 # PROFILING A QUERY ON A TABLE WITH A NEW INDEX
+
+use openworks;
+select count(*) from my_big_table;
+
+select count(*), concat (day(user_birthdate),'-',month(user_birthdate)) as birthdate
+from my_big_table 
+group by concat (day(user_birthdate),'-',month(user_birthdate)) 
+order by month(user_birthdate),day(user_birthdate);
+
+
+select user_name, user_birthdate, user_city, user_country from my_big_table where user_country='Betonia';
+show profiles;
+
+create index i_user_country on my_big_table(user_country);
+
+select user_name, user_birthdate, user_city, user_country from my_big_table where user_country='Nuevo Rico';
+show profiles;
+
+# FURTHER READING!!! THIS IS GOOD STUFF!!!!
+# Building the best INDEX for a given SELECT
+https://mariadb.com/kb/en/building-the-best-index-for-a-given-select/
+

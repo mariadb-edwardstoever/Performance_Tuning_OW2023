@@ -1,0 +1,18 @@
+# DISCOVERING CARDINALITY
+
+
+# INDEX(flag) is almost never useful if `flag` has very few values. 
+# More specifically, when you say WHERE flag = 1 and "1" occurs more 
+# than 20% of the time, such an index will be shunned. The Optimizer 
+# would prefer to scan the table instead of bouncing back and forth 
+# between the index and the data for more than 20% of the rows.
+# ("20%" is really somewhere between 10% and 30%, depending on the phase of the moon.)
+
+use openworks;
+
+select count(*), count(distinct user_country) from my_big_table;
+
+show index from my_big_table\G
+
+##### Don't forget:
+##### https://mariadb.com/kb/en/building-the-best-index-for-a-given-select/
